@@ -1,6 +1,4 @@
-#include <iostream>
 #include <libresult.hpp>
-using namespace std;
 
 struct ResultBase::Impl {
     void* v; 
