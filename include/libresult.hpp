@@ -2,11 +2,9 @@
 #include <stdexcept>
 #include <utility>
 #include <memory>
-#include <vector>
 #include <assert.h>
 #include <cstring>
 #include <cstdlib>
-#include <typeinfo>
 class ResultBase;
 template<class T, class E> class Result;
 template<class T, class E> class Ok;
