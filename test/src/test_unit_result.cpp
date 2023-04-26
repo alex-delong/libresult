@@ -8,10 +8,10 @@
 #include <limits>
 #include <cstdlib>
 #include <ctime>
-using namespace std;
 
 struct TestOk {
     static void constructor() {
+        using namespace std;
         cout << "Ok::Ok(T).. ";
         try {
             Ok<int, exception> a = Ok<int, exception>(0); 
@@ -50,6 +50,7 @@ struct TestOk {
         cout << "passed!" << endl;
     }
     static void unwrap() {
+        using namespace std;
         cout << "Ok::unwrap().. ";
         try {
             Result<int, exception>* foo = new Ok<int, exception>(1);
@@ -70,6 +71,7 @@ struct TestOk {
         } cout << "passed!" << endl;
     }
     static void expect() {
+        using namespace std;
         cout << "Ok::expect(string).. ";
         try {
             Result<int, exception>* foo = new Ok<int, exception>(1);
@@ -81,6 +83,7 @@ struct TestOk {
         } cout << "passed!" << endl;
     }
     static void is_ok() {
+        using namespace std;
         cout << "Ok::is_ok().. ";
         try {
             Result<int, exception>* foo = new Ok<int, exception>(1);
@@ -92,6 +95,7 @@ struct TestOk {
         } cout << "passed!" << endl;
     }
     static void is_err() {
+        using namespace std;
         try {
             cout << "Ok::is_err().. ";
             Result<int, exception>* foo = new Ok<int, exception>(1);
@@ -103,6 +107,7 @@ struct TestOk {
         } cout << "passed!" << endl;
     }
     static void assignment() {
+        using namespace std;
         cout << "Ok::operator=().. ";
         try {
             Ok<int, exception> ok_i(3); // = Ok<int, exception>(3);
@@ -140,11 +145,13 @@ struct TestOk {
 };
 struct TestErr {
     static void constructor() {
+        using namespace std;
         cout << "Err::Err(E).. ";
         Err<int, exception> e = exception();
         cout << "passed!" << endl;
     }
     static void unwrap() {
+        using namespace std;
         cout << "Err::unwrap().. ";
         Result<int, exception>* a = new Err<int, exception>(exception());
         try {
@@ -156,6 +163,7 @@ struct TestErr {
         delete a;
     }
     static void expect() {
+        using namespace std;
         cout << "Err::expect(string).. ";
         Err<int, exception> a = exception();
         try {
@@ -164,6 +172,7 @@ struct TestErr {
         } catch (exception& e) {}
     }
     static void is_ok() {
+        using namespace std;
         cout << "Err::is_ok().. ";
         Err<int, exception> e = exception();
         try {
@@ -174,6 +183,7 @@ struct TestErr {
         } cout << "passed!" << endl;
     }
     static void is_err() {
+        using namespace std;
         cout << "Err::is_err()..";
         Err<int, exception> e = exception();
         try {
@@ -184,6 +194,7 @@ struct TestErr {
         } cout << "passed!" << endl;
     }
     static void assignment() {
+        using namespace std;
         try {
             cout << "Err::operator=().. ";
             Err<int, exception> e = new exception();
@@ -214,6 +225,7 @@ struct TestErr {
 };
 
 int main() {
+    using namespace std;
     cout << "beginning Ok unit test: " << endl;
     TestOk::all();
     cout << "beginning Err unit test: " << endl;
