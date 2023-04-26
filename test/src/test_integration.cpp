@@ -6,7 +6,6 @@
 #include <exception>
 #include <libexception.hpp>
 #include <cmath>
-using namespace std;
 
 struct DivByZero : public Exception {
     DivByZero() : Exception("Division by zero", "") {}
@@ -94,11 +93,11 @@ int main() {
     Result<float, Exception>& b = *(new Ok<float, Exception>(0.0));
     Result<float, Exception>& c = square_rt(nat_log(divide(a, b)));
     if (c.is_err()) {
-        cout << "exception in main: " << endl;
+        std::cout << "exception in main: " << std::endl;
         c.get_trace();
     } else {
-        cout << c.unwrap() << endl;
+        std::cout << c.unwrap() << std::endl;
     }
     delete &c;
-    cout << "end of example program." << endl;
+    std::cout << "end of example program." << std::endl;
 }
