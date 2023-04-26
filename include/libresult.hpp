@@ -7,7 +7,6 @@
 #include <cstring>
 #include <cstdlib>
 #include <typeinfo>
-using namespace std;
 class ResultBase;
 template<class T, class E> class Result;
 template<class T, class E> class Ok;
@@ -32,7 +31,7 @@ template<class T, class E> class Result : protected ResultBase {
   public:
     Result<T, E>(void* const& v) : next(nullptr), ResultBase(v) {}//{cout << "Result constructor called for v @ " << v << endl;}
     virtual T& unwrap() const = 0;
-    virtual T& expect(string s) const = 0;
+    virtual T& expect(std::string s) const = 0;
     void push_back(Result& r) {
         if (next == nullptr) {
             next = &r;
@@ -57,9 +56,9 @@ template<class T, class E> class Result : protected ResultBase {
     void get_trace() {
         if (this->is_err()) {
             Err<T, E>* e_ptr = static_cast<Err<T, E>*>(this);
-            cout << e_ptr->what() << endl;
+            std::cout << e_ptr->what() << std::endl;
         } else {
-            cout << this->unwrap() << endl;
+            std::cout << this->unwrap() << std::endl;
         }
         if (next != nullptr) {
             next->get_trace();
@@ -91,7 +90,7 @@ template<class T, class E> class Ok : public Result<T, E> {
     T& unwrap() const final {
         return get_wrapped(); 
     }
-    T& expect(string) const final {
+    T& expect(std::string) const final {
         return get_wrapped();
     }
     bool is_ok() const final {
@@ -159,11 +158,11 @@ template<class T, class E> class Err : public Result<T, E> {
     Err(Err&& err) : Result<T, E>(err.move_out()) {}
     Err(E&& other_e) : Result<T, E>(new E(std::move(other_e))) {}
     T& unwrap() const final {
-        cout << "throwing unwrapped Err " << this->what() << endl;
+        std::cout << "throwing unwrapped Err " << this->what() << std::endl;
         throw get_wrapped();
     }
-    T& expect(string s) const final {
-        cout << "throwing unwrapped Err " << this->what() << ": " << s << endl;
+    T& expect(std::string s) const final {
+        std::cout << "throwing unwrapped Err " << this->what() << ": " << s << std::endl;
         throw get_wrapped();
     }
     bool is_ok() const final {
