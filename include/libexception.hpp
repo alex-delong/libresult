@@ -1,8 +1,7 @@
 #include <cstring>
 #include <exception>
-using namespace std;
 
-class Exception : exception {
+class Exception : std::exception {
   protected:
     const char* message = "Exception";
     char* location = nullptr;
