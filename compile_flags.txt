@@ -1,2 +1,0 @@
--I
-/home/alexd/devel/c++/result/include
