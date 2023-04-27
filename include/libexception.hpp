@@ -20,8 +20,7 @@ namespace LibException {
             // else, message_location == message
         void set_location(const char* l);
 
-        // copy constructors:
-
+        // copy constructor
         // pre-conditions:
             // m and l are non-null ptrs 
         // post-conditions:
@@ -36,7 +35,8 @@ namespace LibException {
             // "" has been copied to this->location
             // this->message is default
         Exception(); 
-
+        
+        // copy constructor
         // pre-conditions:
             // other is constructed or otherwise has a non-null location
         // post-conditions:
@@ -44,6 +44,7 @@ namespace LibException {
             // this->message is default
         Exception(const Exception& other);
         
+        // copy constructor
         // pre-conditions:
             // l is a non-null ptr 
         // post-conditions
