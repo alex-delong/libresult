@@ -52,6 +52,9 @@ namespace LibResult {
       protected:
         // a pointer to the next Result in the trace
         Result* next;
+
+        // TODO: add a pure virtual get_wrapped()
+        // TODO: add a pure virtual move_out()
       public:
         // copy constructor:
         // pre-conditions:
@@ -164,38 +167,111 @@ namespace LibResult {
         // moves T out of this and leaves this holding a default constructed T
         // pre-conditions:
             // this is holding a valid T allocated with new
+        // post-conditions:
+            // a copy of the held T has been returned 
+            // this holds a default constructed T
         T* move_out() { 
             T* this_t_ptr = static_cast<T*>(ResultBase::unwrap());
             T* new_t_ptr = new T;
             std::swap(*new_t_ptr, *this_t_ptr);
             return new_t_ptr;
         }
-        T& get_wrapped() const {
+
+        // returns the held T value
+        // pre-conditions:
+            // ResultBase is holding a valid T ptr
+        // post-conditions:
+            // the held T value has been returned
+        T& get_wrapped() const { // TODO: return by value
             return *static_cast<T*>(ResultBase::unwrap());
         }
       public:
+        // default constructor:
+        // pre-conditions:
+            // T is default constructable
+        // post-conditions:
+            // this has been constructed with a new T
         Ok() : Result<T, E>(new T) {}
-        Ok(const Ok& other_ok) : Result<T, E>(other_ok.get_wrapped()) {}
+
+        // copy constructor
+        // pre-conditions:
+            // the argument is a constructed Ok
+        // post-conditions:
+            // this->get_wrapped() is a new-allocated copy of the T held by the argument
+        Ok(const Ok& other_ok) : Result<T, E>(other_ok.get_wrapped()) {} // TODO: change argument to "new T(other_ok.get_wrapped())"
+        
+        // copy constructor
+        // pre-conditions:
+            // the argument is a constructed T
+        // post-conditions:
+            // this->get_wrapped() is a new-allocated copy of the argument
         Ok(const T& other_t) : Result<T, E>(new T(other_t)) {}
+        
+        // move semantics:
+
+        // pre-conditions:
+            // the argument is a new-allocated pointer to a T
+        // post-conditions:
+            // this has taken ownership of the argument
         Ok(T* other_t_ptr) : Result<T, E>(other_t_ptr) {}
-        Ok(Ok&& other_ok) : Result<T, E>(other_ok.move_out()) {}
+        
+        // pre-conditions:
+            // the argument is a constructed Ok
+        // post-conditions:
+            // this wrapped value is a new-allocated move of the argument's wrapped value
+        Ok(Ok&& other_ok) : Result<T, E>(other_ok.move_out()) {} // TODO: use std::forward instead
+        
+        // pre-conditions:
+            // argument is a constructed T
+        // post-conditions:
+            // this wrapped value is a new-allocated std::move of the argument
         Ok(T&& other_t) : Result<T, E>(new T(std::move(other_t))) {}
-        T& unwrap() const final {
+
+        // returns the wrapped value
+        // pre-conditions:
+            // this wrapped value is a constructed T
+        // post-conditions:
+            // this wrapped value has been returned
+        T& unwrap() const final { // TODO: return by value
             return get_wrapped(); 
         }
-        T& expect(std::string) const final {
+
+        // equivalent to Ok::unwrap()
+        // pre-conditions:
+            // argument is a constructed std::string
+            // this wrapped value is a constructed T
+        // post-conditions:
+            // this wrapped value has been returned
+        T& expect(std::string) const final { // TODO: return by value
             return get_wrapped();
         }
+
+        // checks if this points to an Ok (used by Results)
         bool is_ok() const final {
             return true;
         }
+
+        // checks if this points to an Err (used by Results)
         bool is_err() const final {
             return false;
         }
+
+        // pre-conditions:
+            // this wrapped value is new-allocated
+        // post-conditions:
+            // this wrapped value is deleted 
         ~Ok() override {
             T* t_ptr = static_cast<T*>(ResultBase::unwrap());
             delete t_ptr;
         }
+
+        // copy assignment
+        // pre-conditions:
+            // argument is a constructed T
+            // T is copy assignable
+            // this is constructed 
+        // post-conditions:
+            // this wrapped value == argument
         Ok& operator=(const T& other_t) {
             T* this_t_ptr = static_cast<T*>(ResultBase::unwrap());
             if (&other_t == this_t_ptr) {
@@ -204,6 +280,14 @@ namespace LibResult {
             *this_t_ptr = other_t;
             return *this;
         }
+
+        // copy assignment
+        // pre-conditions:
+            // argument is constructed
+            // T is copy assignable
+            // this is constructed
+        // post-conditions:
+            // this wrapped value is a copy of the argument's wrapped value
         Ok& operator=(const Ok& other_ok) {
             if (&other_ok == this) {
                 return *this;
@@ -212,6 +296,12 @@ namespace LibResult {
             *this_t_ptr = other_ok.get_wrapped();
             return *this;
         }
+
+        // pre-conditions:
+            // argument is a valid ptr to a new-allocated T
+            // this is constructed
+        // post-conditions:
+            // this wrapped ptr is deleted and replaced with argument
         Ok& operator=(T* other_t_ptr) {
             T* this_t_ptr = static_cast<T*>(ResultBase::unwrap());
             if (other_t_ptr == this_t_ptr) {
@@ -221,7 +311,13 @@ namespace LibResult {
             ResultBase::set(other_t_ptr);
             return *this;
         }
-        Ok& operator=(Ok<T, E>&& other_ok) {
+
+        // pre-conditions:
+            // argument is constructed
+            // this is constructed
+        // post-conditions:
+            // this wrapped value is a std::move of argument's wrapped value
+        Ok& operator=(Ok<T, E>&& other_ok) { // TODO: replace move_out() with std::move(other_ok.get_wraped())
             if (&other_ok == this) {
                 return *this;
             }
@@ -234,48 +330,116 @@ namespace LibResult {
     };
     template<class T, class E> class Err : public Result<T, E> {
         // moves exception out of this and returns it
+        // pre-conditions:
+            //
+        // post-conditions:
+            // 
         E* move_out() {
             E* this_e_ptr = static_cast<E*>(ResultBase::unwrap());
             E* new_e_ptr = new E;
             std::swap(*this_e_ptr, *new_e_ptr);
             return new_e_ptr;        
         }
+
+        // pre-conditions:
+            //
+        // post-conditions:
+            // 
         E& get_wrapped() const {
             return *static_cast<E*>(ResultBase::unwrap());
         }
       public:
+        // pre-conditions:
+            //
+        // post-conditions:
+            //
         Err() : Result<T, E>(new E) {}
+        
+        // pre-conditions:
+            //
+        // post-conditions:
+            // 
         Err(const Err& other_err) : Result<T, E>(new E(other_err.get_wrapped())) {}
+        
+        // pre-conditions:
+            //
+        // post-conditions:
+            // 
         Err(const E& other_e) : Result<T, E>(new E(other_e)) {}
+        
+        // pre-conditions:
+            //
+        // post-conditions:
+            // 
         Err(E* other_e_ptr) : Result<T, E>(other_e_ptr) {}
+        
+        // pre-conditions:
+            //
+        // post-conditions:
+            // 
         Err(Err&& err) : Result<T, E>(err.move_out()) {}
+        
+        // pre-conditions:
+            //
+        // post-conditions:
+            // 
         Err(E&& other_e) : Result<T, E>(new E(std::move(other_e))) {}
+        
+        // pre-conditions:
+            //
+        // post-conditions:
+            // 
         T& unwrap() const final {
             std::cout << "throwing unwrapped Err " << this->what() << std::endl;
             throw get_wrapped();
         }
+
+        // pre-conditions:
+            //
+        // post-conditions:
+            // 
         T& expect(std::string s) const final {
             std::cout << "throwing unwrapped Err " << this->what() << ": " << s << std::endl;
             throw get_wrapped();
-        }
+        } 
         bool is_ok() const final {
             return false;
         }
         bool is_err() const final {
             return true;
         }
+
+        // pre-conditions:
+            //
+        // post-conditions:
+            // 
         const char* what() const {
             E* e_ptr = static_cast<E*>(ResultBase::unwrap());
             return e_ptr->what();
         }
+        
+        // pre-conditions:
+            //
+        // post-conditions:
+            // 
         const char* where() const {
             E* e_ptr = static_cast<E*>(ResultBase::unwrap());
             return e_ptr->where();
         }
+
+        // pre-conditions:
+            //
+        // post-conditions:
+            // 
         ~Err() override {
             E* this_e_ptr = static_cast<E*>(ResultBase::unwrap());
             delete this_e_ptr;
         }
+
+        // pre-conditions:
+            //
+        // post-conditions:
+            // 
         Err& operator=(const E& other_e) {
             E* this_e_ptr = static_cast<E*>(ResultBase::unwrap());
             if (&other_e == this_e_ptr) {
@@ -284,6 +448,11 @@ namespace LibResult {
             *this_e_ptr = other_e;
             return *this;
         }
+
+        // pre-conditions:
+            //
+        // post-conditions:
+            // 
         Err& operator=(const Err& other_err) {
             if (&other_err == this) {
                 return *this;
@@ -292,6 +461,11 @@ namespace LibResult {
             *this_e_ptr = other_err.get_wrapped();
             return *this;
         }
+
+        // pre-conditions:
+            //
+        // post-conditions:
+            // 
         Err& operator=(E* other_e_ptr) {
             E* this_e_ptr = static_cast<E*>(ResultBase::unwrap());
             if (other_e_ptr == this_e_ptr) {
@@ -301,6 +475,11 @@ namespace LibResult {
             ResultBase::set(other_e_ptr);
             return *this;
         }
+
+        // pre-conditions:
+            //
+        // post-conditions:
+            // 
         Err& operator=(E&& other_e) {
             E* this_e_ptr = static_cast<E*>(ResultBase::unwrap());
             if (&other_e == this_e_ptr) {
@@ -310,6 +489,11 @@ namespace LibResult {
             ResultBase::set(this->move_in(other_e));
             return *this;
         }
+
+        // pre-conditions:
+            //
+        // post-conditions:
+            // 
         Err& operator=(Err&& other) {
             if (&other == this) {
                 return *this;
