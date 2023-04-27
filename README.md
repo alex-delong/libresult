@@ -8,6 +8,6 @@ Thus, exceptions must have a what() method that returns a value that can be used
 
 # libexception
 
-This is an extension of the std::exception class that provides additional error location details for more useful tracing. Exceptions of this class and derived classes can optionally append the location of the error onto the default error message using a constructor.  
+This is a derivation of the std::exception class that provides additional error location details for more useful tracing. Exceptions of this class and derived classes can optionally append the location of the error onto the default error message using a constructor.  
 
 The integration test gives an example that utilizes both libraries to provide a trace that prints the location and result to stdout.
