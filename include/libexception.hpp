@@ -29,7 +29,14 @@ namespace LibException {
             // the contents of l has been copied to this->location
         Exception(const char* m, const char* l);
       public:
-        
+        // default constructor
+        // pre-conditions:
+            // this->location == nullptr or is otherwise delete[] safe
+        // post-conditions:
+            // "" has been copied to this->location
+            // this->message is default
+        Exception(); 
+
         // pre-conditions:
             // other is constructed or otherwise has a non-null location
         // post-conditions:
@@ -44,14 +51,7 @@ namespace LibException {
             // this->message is default
         Exception(const char* l);
         
-        // default constructor
-        // pre-conditions:
-            // this->location == nullptr or is otherwise delete[] safe
-        // post-conditions:
-            // "" has been copied to this->location
-            // this->message is default
-        Exception(); 
-        
+                
         // returns the error message + location where the error occured
         // pre-conditions:
             // this has been constructed with a valid location and message
