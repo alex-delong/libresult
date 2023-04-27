@@ -12,24 +12,47 @@ namespace LibResult {
     template<class T, class E> class Ok;
     template<class T, class E> class Err;
 
+    // Base class that stores a generic pointer to the value passed to Result
     class ResultBase {
         struct Impl;
         Impl* pimpl;
       protected:
+        // returns the generic pointer to the stored value
+        // pre-conditions:
+            // ResultBase has been constructed and 
+            // stores a valid pointer to a T or E value
+        // post-conditions:
+            // the generic pointer to the stored value has been returned
         void* unwrap() const;
-        void set(void* const&);
+
+        // sets the stored generic pointer to v
+        // pre-conditions:
+            // v is a valid pointer to a T or E value
+        // post-conditions:
+            // the stored generic pointer has been set to v
+        void set(void* const& v);
       public:
-        ResultBase(void* const&);
+        // copy constructor
+        // pre-conditions:
+            // v is a valid generic pointer to a T or E value
+        // post-conditions:
+            // pimpl has been allocated
+            // the stored generic pointer has been set to v
+        ResultBase(void* const& v);
+
+        // pre-conditions:
+            // this->pimpl must be delete safe
+        // post-conditions
+            // this->pimpl has been deleted
         ~ResultBase();
     };
 
     // dummy class that resolves to either an Ok or an Err
-    // T and E must have a copy constructor
     template<class T, class E> class Result : protected ResultBase {
       protected:
         Result* next;
       public:
-        Result<T, E>(void* const& v) : next(nullptr), ResultBase(v) {}//{cout << "Result constructor called for v @ " << v << endl;}
+        Result<T, E>(void* const& v) : next(nullptr), ResultBase(v) {}
         virtual T& unwrap() const = 0;
         virtual T& expect(std::string s) const = 0;
         void push_back(Result& r) {
