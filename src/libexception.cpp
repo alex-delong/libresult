@@ -1,5 +1,5 @@
 #include <libexception.hpp>
-
+using namespace LibException;
 // sets the location and message_location variables
 // pre-conditions:
     // l is a valid cstring

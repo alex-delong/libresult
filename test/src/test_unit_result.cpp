@@ -8,7 +8,7 @@
 #include <limits>
 #include <cstdlib>
 #include <ctime>
-
+using namespace LibResult;
 struct TestOk {
     static void constructor() {
         using namespace std;

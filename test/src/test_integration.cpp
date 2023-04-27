@@ -6,6 +6,8 @@
 #include <exception>
 #include <libexception.hpp>
 #include <cmath>
+using namespace LibException;
+using namespace LibResult;
 
 struct DivByZero : public Exception {
     DivByZero() : Exception("Division by zero", "") {}

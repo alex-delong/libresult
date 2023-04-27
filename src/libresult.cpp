@@ -1,5 +1,5 @@
 #include <libresult.hpp>
-
+using namespace LibResult;
 struct ResultBase::Impl {
     void* v; 
     void* unwrap() {
