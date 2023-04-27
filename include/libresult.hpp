@@ -5,7 +5,7 @@
 #include <assert.h>
 #include <cstring>
 #include <cstdlib>
-
+// TODO: rename variables such as 't' and 't' to 'other_t' and 'other_e' to achieve consistency
 namespace LibResult {
     class ResultBase;
     template<class T, class E> class Result;
@@ -47,14 +47,39 @@ namespace LibResult {
         ~ResultBase();
     };
 
-    // dummy class that resolves to either an Ok or an Err
+    // abstract base class that resolves to either an Ok or an Err
     template<class T, class E> class Result : protected ResultBase {
       protected:
+        // a pointer to the next Result in the trace
         Result* next;
       public:
+        // copy constructor:
+        // pre-conditions:
+            // v is a valid pointer to a T or E object
+        // post-conditions:
+            // ResultBase has been constructed with v
         Result<T, E>(void* const& v) : next(nullptr), ResultBase(v) {}
-        virtual T& unwrap() const = 0;
-        virtual T& expect(std::string s) const = 0;
+        
+        // returns the held T or throws the held E
+        // pre-conditions:
+            // ResultBase is holding a valid pointer to a T or E
+        // post-conditions:
+            // the held value is returned if Ok or thrown if Err
+        virtual T& unwrap() const = 0; // TODO: return as a copy
+
+        // returns the held T or prints the error message s before throwing E
+        // pre-conditions:
+            // ResultBase is holding a valid pointer to a T or E
+        // post-conditions:
+            // the held value is returned if Ok or thrown if Err
+        virtual T& expect(std::string s) const = 0; // TODO: return as a copy
+
+        // stores the argument at the tail of the list
+        // pre-conditions:
+            // next is nullptr or holds a valid pointer to a Result
+            // r is a valid reference to a Result and has been allocated with new
+        // post-conditions:
+            // r has been pushed to the tail
         void push_back(Result& r) {
             if (next == nullptr) {
                 next = &r;
@@ -62,6 +87,13 @@ namespace LibResult {
                 next->push_back(r);
             }
         };
+
+        // newly allocates an Ok(t) and stores it to the tail of the list
+        // pre-conditions:
+            // next is nullptr or holds a valid pointer to a Result
+            // t is copy constructable
+        // post-conditions:
+            // new Ok(t) has been pushed back to the tail
         void push_back(const T& t) {
             if (next == nullptr) {
                 next = new Ok<T, E>(t);
@@ -69,13 +101,29 @@ namespace LibResult {
                 next->push_back(t);
             }
         };
-        void push_back(E e) {
+
+        // newly allocates an Err(e) and stores it to the tail of the list
+        // pre-conditions:
+            // next is nullptr or holds a valid pointer to a Result
+            // e is copy constructable
+        // post-conditions:
+            // new Err(e) has been pushed back to the tail
+        void push_back(E e) { // TODO: pass in by reference
             if (next == nullptr) {
                 next = new Err<T, E>(e);
             } else {
                 next->push_back(e);
             }
         };
+
+        // prints a trace for the linked list where this is the head
+        // pre-conditions:
+            // this is holding either a T or E value
+            // if holding E, then what() must be a method of E
+            // if holding T, then T must have a "<<" operation
+            // next must be nullptr or hold a valid Result pointer
+        // post-conditions:
+            // a trace has been printed to stdout
         void get_trace() {
             if (this->is_err()) {
                 Err<T, E>* e_ptr = static_cast<Err<T, E>*>(this);
@@ -87,13 +135,35 @@ namespace LibResult {
                 next->get_trace();
             }
         }
+
+        // checks if this points to an Ok
+        // pre-conditions:
+            // this must point to a constructed Ok or Err
+        // post-conditions:
+            // if Ok, then true has been returned
+            // else, false has been returned
         virtual bool is_ok() const = 0;
+
+        // checks if this points to an Err
+        // pre-conditions:
+            // this must point to a constructed Ok or Err
+        // post-conditions:
+            // if Err, then true has been returned
+            // else, false has been returned
         virtual bool is_err() const = 0;
+
+        // pre-conditions:
+            // this->next is a delete-safe pointer
+        // post-conditions:
+            // this->next has been deleted
         virtual ~Result<T, E>() {
             delete next;
         }
     };
     template<class T, class E> class Ok : public Result<T, E> { 
+        // moves T out of this and leaves this holding a default constructed T
+        // pre-conditions:
+            // this is holding a valid T allocated with new
         T* move_out() { 
             T* this_t_ptr = static_cast<T*>(ResultBase::unwrap());
             T* new_t_ptr = new T;
