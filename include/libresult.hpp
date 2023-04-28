@@ -162,25 +162,12 @@ namespace LibResult {
         }
     };
     template<class T, class E> class Ok : public Result<T, E> { 
-        // moves T out of this and leaves this holding a default constructed T
-        // pre-conditions:
-            // this is holding a valid T allocated with new
-        // post-conditions:
-            // a copy of the held T has been returned 
-            // this holds a default constructed T
-        T* move_out() { // TODO: remove this method in favor of std::move(this->get_wrapped())
-            T* this_t_ptr = static_cast<T*>(ResultBase::unwrap());
-            T* new_t_ptr = new T;
-            std::swap(*new_t_ptr, *this_t_ptr);
-            return new_t_ptr;
-        }
-
-        // returns the held T value
+        // returns the held T value by reference
         // pre-conditions:
             // ResultBase is holding a valid T ptr
         // post-conditions:
-            // the held T value has been returned
-        T& get_wrapped() const { // TODO: return by value
+            // the held T value has been returned by reference
+        T& get_wrapped() const {
             return *static_cast<T*>(ResultBase::unwrap());
         }
       public:
@@ -196,7 +183,7 @@ namespace LibResult {
             // the argument is a constructed Ok
         // post-conditions:
             // this->get_wrapped() is a new-allocated copy of the T held by the argument
-        Ok(const Ok& other_ok) : Result<T, E>(new T(other_ok.get_wrapped())) {} // TODO: change argument to "new T(other_ok.get_wrapped())"
+        Ok(const Ok& other_ok) : Result<T, E>(new T(other_ok.get_wrapped())) {} 
         
         // copy constructor
         // pre-conditions:
@@ -217,7 +204,7 @@ namespace LibResult {
             // the argument is a constructed Ok
         // post-conditions:
             // this wrapped value is a new-allocated move of the argument's wrapped value
-        Ok(Ok&& other_ok) : Result<T, E>(other_ok.move_out()) {} // TODO: use std::forward instead
+        Ok(Ok&& other_ok) : Result<T, E>(new T(std::move(other_ok.get_wrapped()))) {} 
         
         // pre-conditions:
             // argument is a constructed T
@@ -316,31 +303,16 @@ namespace LibResult {
             // this is constructed
         // post-conditions:
             // this wrapped value is a std::move of argument's wrapped value
-        Ok& operator=(Ok<T, E>&& other_ok) { // TODO: replace move_out() with std::move(other_ok.get_wraped())
+        Ok& operator=(Ok<T, E>&& other_ok) { 
             if (&other_ok == this) {
                 return *this;
             }
-            T* other_t_ptr = other_ok.move_out();
             T* this_t_ptr = static_cast<T*>(ResultBase::unwrap());
-            delete this_t_ptr;
-            ResultBase::set(other_t_ptr);
+            *this_t_ptr = std::move(other_ok.get_wrapped());
             return *this;
         }
     };
-    template<class T, class E> class Err : public Result<T, E> {
-        // moves E out of this and leaves this holding a default constructed T
-        // pre-conditions:
-            // this is holding a valid E allocated with new
-        // post-conditions:
-            // a copy of the held E has been returned 
-            // this holds a default constructed E
-        E* move_out() { // TODO: remove this method in favor of std::move(this->get_wrapped())
-            E* this_e_ptr = static_cast<E*>(ResultBase::unwrap());
-            E* new_e_ptr = new E;
-            std::swap(*this_e_ptr, *new_e_ptr);
-            return new_e_ptr;        
-        }
-        
+    template<class T, class E> class Err : public Result<T, E> {        
         // returns the held E value
         // pre-conditions:
             // ResultBase is holding a valid E ptr
@@ -362,7 +334,7 @@ namespace LibResult {
             // the argument is a constructed Err
         // post-conditions:
             // this->get_wrapped() is a new-allocated copy of the E held by the argument
-        Err(const Err& other_err) : Result<T, E>(new E(other_err.get_wrapped())) {}
+        Err(const Err& other_err) : Result<T, E>(new E(std::move(other_err.get_wrapped()))) {}
  
         // copy constructor
         // pre-conditions:
@@ -383,7 +355,7 @@ namespace LibResult {
             // the argument is a constructed Err
         // post-conditions:
             // this wrapped value is a new-allocated move of the argument's wrapped value 
-        Err(Err&& other_err) : Result<T, E>(other_err.move_out()) {} // TODO: replace err.move_out() with std::move(err.get_wrapped())
+        Err(Err&& other_err) : Result<T, E>(std::move(other_err.get_wrapped())) {} 
         
         // pre-conditions:
             // argument is a constructed E
