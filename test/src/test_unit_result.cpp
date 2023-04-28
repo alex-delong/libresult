@@ -1,5 +1,3 @@
-// The result monad allows us to capture errors inside a wrapper
-// We can use it to propagate errors
 #include <libresult.hpp>
 #include <iostream>
 #include <exception>
