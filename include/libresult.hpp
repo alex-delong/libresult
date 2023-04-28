@@ -5,7 +5,6 @@
 #include <assert.h>
 #include <cstring>
 #include <cstdlib>
-// TODO: rename variables such as 't' and 'e' to 'other_t' and 'other_e' to achieve consistency
 namespace LibResult {
     class ResultBase;
     template<class T, class E> class Result;
@@ -53,8 +52,6 @@ namespace LibResult {
         // a pointer to the next Result in the trace
         Result* next;
 
-        // TODO: add a pure virtual get_wrapped()
-        // TODO: add a pure virtual move_out()
       public:
         // copy constructor:
         // pre-conditions:
@@ -68,14 +65,15 @@ namespace LibResult {
             // ResultBase is holding a valid pointer to a T or E
         // post-conditions:
             // the held value is returned if Ok or thrown if Err
-        virtual T& unwrap() const = 0; // TODO: return as a copy
+        virtual T unwrap() const = 0;
 
-        // returns the held T or prints the error message s before throwing E
+        // returns the held T 
+        // or prints the argument before throwing E
         // pre-conditions:
             // ResultBase is holding a valid pointer to a T or E
         // post-conditions:
             // the held value is returned if Ok or thrown if Err
-        virtual T& expect(std::string s) const = 0; // TODO: return as a copy
+        virtual T expect(std::string) const = 0;
 
         // stores the argument at the tail of the list
         // pre-conditions:
@@ -198,7 +196,7 @@ namespace LibResult {
             // the argument is a constructed Ok
         // post-conditions:
             // this->get_wrapped() is a new-allocated copy of the T held by the argument
-        Ok(const Ok& other_ok) : Result<T, E>(other_ok.get_wrapped()) {} // TODO: change argument to "new T(other_ok.get_wrapped())"
+        Ok(const Ok& other_ok) : Result<T, E>(new T(other_ok.get_wrapped())) {} // TODO: change argument to "new T(other_ok.get_wrapped())"
         
         // copy constructor
         // pre-conditions:
@@ -232,7 +230,7 @@ namespace LibResult {
             // this wrapped value is a constructed T
         // post-conditions:
             // this wrapped value has been returned
-        T& unwrap() const final { // TODO: return by value
+        T unwrap() const final {
             return get_wrapped(); 
         }
 
@@ -241,7 +239,7 @@ namespace LibResult {
             // this wrapped value is a constructed T
         // post-conditions:
             // this wrapped value has been returned
-        T& expect(std::string) const final { // TODO: return by value
+        T expect(std::string) const final {
             return get_wrapped();
         }
 
@@ -398,7 +396,7 @@ namespace LibResult {
             // this wrapped value is a constructed E
         // post-conditions:
             // this wrapped value has been thrown
-        T& unwrap() const final { // TODO: return by value
+        T unwrap() const final {
             std::cout << "throwing unwrapped Err " << this->what() << std::endl;
             throw get_wrapped();
         }
@@ -409,7 +407,7 @@ namespace LibResult {
             // this wrapped value is a constructed E
         // post-conditions:
             // this wrapped value has been thrown and s has been printed to stdout
-        T& expect(std::string s) const final {
+        T expect(std::string s) const final {
             std::cout << "throwing unwrapped Err " << this->what() << ": " << s << std::endl;
             throw get_wrapped();
         } 
