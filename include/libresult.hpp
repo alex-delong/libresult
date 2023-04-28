@@ -170,7 +170,7 @@ namespace LibResult {
         // post-conditions:
             // a copy of the held T has been returned 
             // this holds a default constructed T
-        T* move_out() { 
+        T* move_out() { // TODO: remove this method in favor of std::move(this->get_wrapped())
             T* this_t_ptr = static_cast<T*>(ResultBase::unwrap());
             T* new_t_ptr = new T;
             std::swap(*new_t_ptr, *this_t_ptr);
@@ -312,6 +312,8 @@ namespace LibResult {
             return *this;
         }
 
+        // TODO: add move semantics for other_t
+
         // pre-conditions:
             // argument is constructed
             // this is constructed
@@ -329,75 +331,85 @@ namespace LibResult {
         }
     };
     template<class T, class E> class Err : public Result<T, E> {
-        // moves exception out of this and returns it
+        // moves E out of this and leaves this holding a default constructed T
         // pre-conditions:
-            //
+            // this is holding a valid E allocated with new
         // post-conditions:
-            // 
-        E* move_out() {
+            // a copy of the held E has been returned 
+            // this holds a default constructed E
+        E* move_out() { // TODO: remove this method in favor of std::move(this->get_wrapped())
             E* this_e_ptr = static_cast<E*>(ResultBase::unwrap());
             E* new_e_ptr = new E;
             std::swap(*this_e_ptr, *new_e_ptr);
             return new_e_ptr;        
         }
-
+        
+        // returns the held E value
         // pre-conditions:
-            //
+            // ResultBase is holding a valid E ptr
         // post-conditions:
-            // 
+            // the held E value has been returned
         E& get_wrapped() const {
             return *static_cast<E*>(ResultBase::unwrap());
         }
       public:
+        // default constructor:
         // pre-conditions:
-            //
+            // E is default constructable
         // post-conditions:
-            //
+            // this has been constructed with a new E
         Err() : Result<T, E>(new E) {}
         
+        // copy constructor
         // pre-conditions:
-            //
+            // the argument is a constructed Err
         // post-conditions:
-            // 
+            // this->get_wrapped() is a new-allocated copy of the E held by the argument
         Err(const Err& other_err) : Result<T, E>(new E(other_err.get_wrapped())) {}
-        
+ 
+        // copy constructor
         // pre-conditions:
-            //
+            // the argument is a constructed E
         // post-conditions:
-            // 
+            // this->get_wrapped() is a new-allocated copy of the argument
         Err(const E& other_e) : Result<T, E>(new E(other_e)) {}
         
+        // move semantics:
+
         // pre-conditions:
-            //
+            // the argument is a new-allocated pointer to an E
         // post-conditions:
-            // 
+            // this has taken ownership of the argument
         Err(E* other_e_ptr) : Result<T, E>(other_e_ptr) {}
         
         // pre-conditions:
-            //
+            // the argument is a constructed Err
         // post-conditions:
-            // 
-        Err(Err&& err) : Result<T, E>(err.move_out()) {}
+            // this wrapped value is a new-allocated move of the argument's wrapped value 
+        Err(Err&& err) : Result<T, E>(err.move_out()) {} // TODO: replace err.move_out() with std::move(err.get_wrapped())
         
         // pre-conditions:
-            //
+            // argument is a constructed E
         // post-conditions:
-            // 
+            // this wrapped value is a new-allocated std::move of the argument 
         Err(E&& other_e) : Result<T, E>(new E(std::move(other_e))) {}
         
+        // throws the wrapped value
         // pre-conditions:
-            //
+            // this wrapped value is a constructed E
         // post-conditions:
-            // 
-        T& unwrap() const final {
+            // this wrapped value has been thrown
+        T& unwrap() const final { // TODO: return by value
             std::cout << "throwing unwrapped Err " << this->what() << std::endl;
             throw get_wrapped();
         }
-
+ 
+        // the same thing as this->unwrap() but also prints the argument to stdout
         // pre-conditions:
-            //
+            // argument is a constructed std::string
+            // this wrapped value is a constructed E
         // post-conditions:
-            // 
+            // this wrapped value has been thrown and s has been printed to stdout
         T& expect(std::string s) const final {
             std::cout << "throwing unwrapped Err " << this->what() << ": " << s << std::endl;
             throw get_wrapped();
@@ -409,37 +421,42 @@ namespace LibResult {
             return true;
         }
 
+        // returns E::what() for the wrapped E
         // pre-conditions:
-            //
+            // this wrapped E is constructed and has a what() method that returns a cstring
         // post-conditions:
-            // 
+            // for this wrapped E, E::what() has been returned
         const char* what() const {
             E* e_ptr = static_cast<E*>(ResultBase::unwrap());
             return e_ptr->what();
         }
         
+        // returns E::where() for the wrapped E (this is meant to be used with LibException)
         // pre-conditions:
-            //
+            // this wrapped E is constructed and has a where() method that returns a cstring
         // post-conditions:
-            // 
+            // for this wrapped E, E::where() has been returned
         const char* where() const {
             E* e_ptr = static_cast<E*>(ResultBase::unwrap());
             return e_ptr->where();
         }
 
         // pre-conditions:
-            //
+            // this wrapped value is new-allocated
         // post-conditions:
-            // 
+            // this wrapped value is deleted 
         ~Err() override {
             E* this_e_ptr = static_cast<E*>(ResultBase::unwrap());
             delete this_e_ptr;
         }
 
+        // copy assignment
         // pre-conditions:
-            //
+            // argument is a constructed E
+            // E is copy assignable
+            // this is constructed 
         // post-conditions:
-            // 
+            // this wrapped value == argument
         Err& operator=(const E& other_e) {
             E* this_e_ptr = static_cast<E*>(ResultBase::unwrap());
             if (&other_e == this_e_ptr) {
@@ -449,10 +466,13 @@ namespace LibResult {
             return *this;
         }
 
+        // copy assignment
         // pre-conditions:
-            //
+            // argument is constructed
+            // E is copy assignable
+            // this is constructed
         // post-conditions:
-            // 
+            // this wrapped value is a copy of the argument's wrapped value 
         Err& operator=(const Err& other_err) {
             if (&other_err == this) {
                 return *this;
@@ -463,9 +483,10 @@ namespace LibResult {
         }
 
         // pre-conditions:
-            //
+            // argument is a valid ptr to a new-allocated E
+            // this is constructed
         // post-conditions:
-            // 
+            // this wrapped ptr is deleted and replaced with argument
         Err& operator=(E* other_e_ptr) {
             E* this_e_ptr = static_cast<E*>(ResultBase::unwrap());
             if (other_e_ptr == this_e_ptr) {
@@ -477,9 +498,10 @@ namespace LibResult {
         }
 
         // pre-conditions:
-            //
+            // argument is constructed
+            // this is constructed
         // post-conditions:
-            // 
+            // this wrapped value is a std::move of the argument
         Err& operator=(E&& other_e) {
             E* this_e_ptr = static_cast<E*>(ResultBase::unwrap());
             if (&other_e == this_e_ptr) {
@@ -491,9 +513,10 @@ namespace LibResult {
         }
 
         // pre-conditions:
-            //
+            // argument is constructed
+            // this is constructed
         // post-conditions:
-            // 
+            // this wrapped value is a std::move of argument's wrapped value
         Err& operator=(Err&& other) {
             if (&other == this) {
                 return *this;
