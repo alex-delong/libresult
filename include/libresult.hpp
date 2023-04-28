@@ -5,7 +5,7 @@
 #include <assert.h>
 #include <cstring>
 #include <cstdlib>
-// TODO: rename variables such as 't' and 't' to 'other_t' and 'other_e' to achieve consistency
+// TODO: rename variables such as 't' and 'e' to 'other_t' and 'other_e' to achieve consistency
 namespace LibResult {
     class ResultBase;
     template<class T, class E> class Result;
