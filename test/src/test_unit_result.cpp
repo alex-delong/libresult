@@ -231,5 +231,4 @@ int main() {
     cout << "beginning Err unit test: " << endl;
     TestErr::all();
     cout << "All tests complete!" << endl;
-    //string* s_ptr = malloc(sizeof(string));
 }
