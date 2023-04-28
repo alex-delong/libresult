@@ -1,4 +1,3 @@
-// an example to illustrate error propagation using Result
 #include <libresult.hpp>
 #include <iostream>
 #include <assert.h>
@@ -19,7 +18,7 @@ struct NegativeLog : public Exception {
     NegativeLog(const char* l) : Exception("Negative logarithm", l) {}
     NegativeLog(const Exception& other) : Exception("Negative logarithm", other.where()) {}
 };
-// we presume the user floatends to work with real numbers only
+// we presume the user intends to work with real numbers only
 struct NegativeRoot : public Exception {
     NegativeRoot() : Exception("Negative root", "") {}
     NegativeRoot(const char* l) : Exception("Negative root", l) {}
@@ -91,15 +90,18 @@ Result<float, Exception>& square_rt(Result<float, Exception>& a) {
 }
 
 int main() {
+    using namespace std;
+    cout << "beginning integration test:" << endl;
     Result<float, Exception>& a = *(new Ok<float, Exception>(10));
     Result<float, Exception>& b = *(new Ok<float, Exception>(0.0));
     Result<float, Exception>& c = square_rt(nat_log(divide(a, b)));
     if (c.is_err()) {
-        std::cout << "exception in main: " << std::endl;
-        c.get_trace();
+        cout << "exception in main: " << endl;
+        // we expect error types and locations to be printed to stdout 
+        c.get_trace(); // TODO: have get_trace return a stringstream so that it's output can be tested
     } else {
-        std::cout << c.unwrap() << std::endl;
+        cout << c.unwrap() << endl;
     }
     delete &c;
-    std::cout << "end of example program." << std::endl;
+    cout << "end of integration test." << endl;
 }
