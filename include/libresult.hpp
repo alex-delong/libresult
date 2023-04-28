@@ -91,31 +91,31 @@ namespace LibResult {
             }
         };
 
-        // newly allocates an Ok(t) and stores it to the tail of the list
+        // newly allocates an Ok(arg) and stores it to the tail of the list
         // pre-conditions:
             // next is nullptr or holds a valid pointer to a Result
-            // t is copy constructable
+            // argument is copy constructable
         // post-conditions:
-            // new Ok(t) has been pushed back to the tail
-        void push_back(const T& t) {
+            // new Ok(arg) has been pushed back to the tail
+        void push_back(const T& t_other) {
             if (next == nullptr) {
-                next = new Ok<T, E>(t);
+                next = new Ok<T, E>(t_other);
             } else {
-                next->push_back(t);
+                next->push_back(t_other);
             }
         };
 
-        // newly allocates an Err(e) and stores it to the tail of the list
+        // newly allocates an Err(arg) and stores it to the tail of the list
         // pre-conditions:
             // next is nullptr or holds a valid pointer to a Result
-            // e is copy constructable
+            // argument is copy constructable
         // post-conditions:
-            // new Err(e) has been pushed back to the tail
-        void push_back(E e) { // TODO: pass in by reference
+            // new Err(arg) has been pushed back to the tail
+        void push_back(E e_other) { // TODO: pass in by reference
             if (next == nullptr) {
-                next = new Err<T, E>(e);
+                next = new Err<T, E>(e_other);
             } else {
-                next->push_back(e);
+                next->push_back(e_other);
             }
         };
 
@@ -129,8 +129,8 @@ namespace LibResult {
             // a trace has been printed to stdout
         void get_trace() {
             if (this->is_err()) {
-                Err<T, E>* e_ptr = static_cast<Err<T, E>*>(this);
-                std::cout << e_ptr->what() << std::endl;
+                Err<T, E>* this_err_ptr = static_cast<Err<T, E>*>(this);
+                std::cout << this_err_ptr->what() << std::endl;
             } else {
                 std::cout << this->unwrap() << std::endl;
             }
@@ -238,7 +238,6 @@ namespace LibResult {
 
         // equivalent to Ok::unwrap()
         // pre-conditions:
-            // argument is a constructed std::string
             // this wrapped value is a constructed T
         // post-conditions:
             // this wrapped value has been returned
@@ -261,8 +260,8 @@ namespace LibResult {
         // post-conditions:
             // this wrapped value is deleted 
         ~Ok() override {
-            T* t_ptr = static_cast<T*>(ResultBase::unwrap());
-            delete t_ptr;
+            T* this_t_ptr = static_cast<T*>(ResultBase::unwrap());
+            delete this_t_ptr;
         }
 
         // copy assignment
@@ -386,7 +385,7 @@ namespace LibResult {
             // the argument is a constructed Err
         // post-conditions:
             // this wrapped value is a new-allocated move of the argument's wrapped value 
-        Err(Err&& err) : Result<T, E>(err.move_out()) {} // TODO: replace err.move_out() with std::move(err.get_wrapped())
+        Err(Err&& other_err) : Result<T, E>(other_err.move_out()) {} // TODO: replace err.move_out() with std::move(err.get_wrapped())
         
         // pre-conditions:
             // argument is a constructed E
@@ -427,8 +426,8 @@ namespace LibResult {
         // post-conditions:
             // for this wrapped E, E::what() has been returned
         const char* what() const {
-            E* e_ptr = static_cast<E*>(ResultBase::unwrap());
-            return e_ptr->what();
+            E* this_e_ptr = static_cast<E*>(ResultBase::unwrap());
+            return this_e_ptr->what();
         }
         
         // returns E::where() for the wrapped E (this is meant to be used with LibException)
@@ -437,8 +436,8 @@ namespace LibResult {
         // post-conditions:
             // for this wrapped E, E::where() has been returned
         const char* where() const {
-            E* e_ptr = static_cast<E*>(ResultBase::unwrap());
-            return e_ptr->where();
+            E* this_e_ptr = static_cast<E*>(ResultBase::unwrap());
+            return this_e_ptr->where();
         }
 
         // pre-conditions:
@@ -517,11 +516,11 @@ namespace LibResult {
             // this is constructed
         // post-conditions:
             // this wrapped value is a std::move of argument's wrapped value
-        Err& operator=(Err&& other) {
-            if (&other == this) {
+        Err& operator=(Err&& other_err) {
+            if (&other_err == this) {
                 return *this;
             }
-            E* other_e_ptr = other.move_out();
+            E* other_e_ptr = other_err.move_out();
             E* this_e_ptr = static_cast<E*>(ResultBase::unwrap());
             delete this_e_ptr;
             ResultBase::set(other_e_ptr);
